@@ -80,89 +80,84 @@ export class UI {
     const soundConfigs = this.sequencer.getSoundConfigs();
 
     this.container.innerHTML = `
-      <div class="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-4">
-        <div class="max-w-7xl mx-auto">
-          <!-- Header with Glow Effect -->
-          <div class="text-center mb-8 relative">
-            <div class="absolute inset-0 blur-3xl bg-gradient-to-r from-purple-500/30 to-pink-500/30 -z-10"></div>
-            <h1 class="text-5xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent drop-shadow-lg">
-              BeatGen
-            </h1>
-            <p class="text-xl text-gray-300 mb-2">Step Sequencer</p>
-            <p class="text-gray-400">Create beats with 12 programmatically generated sounds</p>
-          </div>
-
-          <!-- Transport Controls with Glass Effect -->
-          <div class="glass-effect rounded-xl p-6 mb-6 shadow-xl">
-            <div class="flex flex-wrap items-center justify-center gap-4">
+      <div class="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-2">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <!-- Compact Header + Controls Bar -->
+          <div class="glass-effect rounded-lg p-3 mb-3 shadow-xl">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <!-- Left: Branding -->
               <div class="flex items-center gap-3">
-                <button id="playBtn" class="btn-play">
-                  <span class="text-xl">${state.isPlaying ? '⏸' : '▶'}</span>
-                  <span>${state.isPlaying ? 'Pause' : 'Play'}</span>
-                </button>
-                <button id="stopBtn" class="btn-stop">
-                  <span class="text-xl">⏹</span>
-                  <span>Stop</span>
-                </button>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  BeatGen
+                </h1>
+                <span class="text-gray-400 text-sm hidden sm:inline">Step Sequencer</span>
               </div>
 
-              <div class="h-12 w-px bg-white/10 mx-2"></div>
+              <!-- Center: Main Controls -->
+              <div class="flex items-center gap-6 flex-wrap">
+                <!-- Transport -->
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-400 hidden sm:inline">PLAY</span>
+                  <button id="playBtn" class="btn-transport btn-play" title="Play/Pause (Space)">
+                    <span class="text-xl">${state.isPlaying ? '⏸' : '▶'}</span>
+                  </button>
+                </div>
 
-              <div class="flex items-center gap-3">
-                <button id="clearBtn" class="btn-clear">
-                  <span class="text-xl">🗑</span>
-                  <span>Clear</span>
-                </button>
-                <button id="randomBtn" class="btn-random">
-                  <span class="text-xl">🎲</span>
-                  <span>Random</span>
-                </button>
-              </div>
-
-              <div class="h-12 w-px bg-white/10 mx-2"></div>
-              
-              <!-- Controls -->
-              <div class="flex flex-col gap-4 min-w-[200px]">
-                <div class="flex items-center gap-3">
-                  <label class="text-sm font-medium min-w-[40px]">BPM</label>
+                <!-- BPM -->
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-400 hidden sm:inline">BPM</span>
                   <input type="range" id="bpmSlider" min="60" max="200" value="${state.bpm}" 
-                         class="control-slider">
-                  <span id="bpmValue" class="text-sm font-mono bg-gray-800/50 px-2 py-1 rounded min-w-[45px] text-center">
+                         class="control-slider bpm-slider w-20" title="Tempo: ${state.bpm} BPM">
+                  <span id="bpmValue" class="text-sm font-mono font-bold text-white min-w-[3ch]">
                     ${state.bpm}
                   </span>
                 </div>
-                
-                <div class="flex items-center gap-3">
-                  <label class="text-sm font-medium min-w-[40px]">VOL</label>
+
+                <!-- Volume -->
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-400 hidden sm:inline">VOL</span>
                   <input type="range" id="volumeSlider" min="0" max="100" value="${Math.round(state.volume * 100)}" 
-                         class="control-slider">
-                  <span id="volumeValue" class="text-sm font-mono bg-gray-800/50 px-2 py-1 rounded min-w-[45px] text-center">
-                    ${Math.round(state.volume * 100)}
+                         class="control-slider volume-slider w-16" title="Master Volume: ${Math.round(state.volume * 100)}%">
+                  <span id="volumeValue" class="text-xs font-mono text-gray-300 min-w-[3ch]">
+                    ${Math.round(state.volume * 100)}%
                   </span>
                 </div>
               </div>
-            </div>
 
-            <!-- Preset Patterns -->
-            <div class="mt-6 flex justify-center gap-3">
-              <button class="preset-btn" data-preset="basic">
-                <span class="text-purple-400">♪</span> Basic Beat
-              </button>
-              <button class="preset-btn" data-preset="funk">
-                <span class="text-blue-400">♫</span> Funk Groove
-              </button>
-              <button class="preset-btn" data-preset="techno">
-                <span class="text-pink-400">★</span> Techno 4/4
-              </button>
+              <!-- Right: Tools & Presets -->
+              <div class="flex items-center gap-3 flex-wrap">
+                <!-- Tools -->
+                <div class="flex items-center gap-1">
+                  <button id="clearBtn" class="btn-tool-compact btn-clear" title="Clear All">
+                    <span class="text-sm">🗑</span>
+                  </button>
+                  <button id="randomBtn" class="btn-tool-compact btn-random" title="Randomize">
+                    <span class="text-sm">🎲</span>
+                  </button>
+                </div>
+
+                <!-- Presets -->
+                <div class="flex items-center gap-1">
+                  <button class="preset-btn-compact" data-preset="basic" title="Load Basic Beat">
+                    <span class="text-purple-400 text-sm">♪</span>
+                  </button>
+                  <button class="preset-btn-compact" data-preset="funk" title="Load Funk Groove">
+                    <span class="text-blue-400 text-sm">♫</span>
+                  </button>
+                  <button class="preset-btn-compact" data-preset="techno" title="Load Techno Pattern">
+                    <span class="text-pink-400 text-sm">★</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
           <!-- Step Grid with Glass Effect -->
-          <div class="glass-effect rounded-xl p-8 shadow-xl">
+          <div class="glass-effect rounded-xl p-4 shadow-xl">
             <div class="grid grid-cols-1 gap-3">
               <!-- Step Numbers with Beat Markers -->
-              <div class="grid grid-cols-17 gap-1 mb-4">
-                <div style="width: 140px;"></div>
+              <div class="grid grid-cols-17 gap-2 mb-4">
+                <div style="width: 130px;"></div>
                 ${Array.from({ length: 16 }, (_, i) => `
                   <div class="text-center font-mono ${i % 4 === 0 ? 'text-white' : 'text-gray-400'} p-1 flex items-center justify-center" style="width: 44px;">
                     ${(i + 1).toString().padStart(2, '0')}
@@ -172,14 +167,14 @@ export class UI {
 
               <!-- Sound Tracks -->
               ${soundConfigs.map((config, trackIndex) => `
-                <div class="grid grid-cols-17 gap-1 group">
+                <div class="grid grid-cols-17 gap-2 group">
                   <!-- Track Label with Fixed Width for Full Names -->
-                  <div class="flex items-center gap-2 pr-3" style="width: 140px;">
+                  <div class="flex items-center gap-2 pl-2 pr-3" style="width: 130px;">
                     <button class="sound-test-btn w-5 h-5 rounded-full ${config.color} hover:scale-110 transition-all duration-300 shadow-lg
                                  flex items-center justify-center group-hover:animate-pulse"
                             data-track="${trackIndex}">
                     </button>
-                    <span class="text-sm font-medium text-left group-hover:text-white transition-colors whitespace-nowrap overflow-visible">
+                    <span class="text-sm font-medium text-left group-hover:text-white transition-colors truncate" style="max-width: 90px;">
                       ${config.name}
                     </span>
                   </div>
@@ -200,7 +195,7 @@ export class UI {
             <div class="mt-6 mb-2">
               <div class="flex justify-center">
                 <div class="grid grid-cols-17 gap-1">
-                  <div style="width: 140px;"></div>
+                  <div style="width: 130px;"></div>
                   ${Array.from({ length: 16 }, (_, i) => `
                     <div class="step-indicator" id="step-indicator-${i}" style="width: 44px;">
                       <div class="w-full h-full ${(state.isPlaying && i === state.currentStep) 
@@ -234,12 +229,10 @@ export class UI {
   private setupEventListeners(): void {
     // Transport controls
     const playBtn = document.getElementById('playBtn') as HTMLButtonElement;
-    const stopBtn = document.getElementById('stopBtn') as HTMLButtonElement;
     const clearBtn = document.getElementById('clearBtn') as HTMLButtonElement;
     const randomBtn = document.getElementById('randomBtn') as HTMLButtonElement;
 
     playBtn?.addEventListener('click', () => this.sequencer.togglePlayback());
-    stopBtn?.addEventListener('click', () => this.sequencer.stop());
     clearBtn?.addEventListener('click', () => this.sequencer.clearPattern());
     randomBtn?.addEventListener('click', () => this.sequencer.randomizePattern());
 
@@ -261,8 +254,8 @@ export class UI {
       if (volumeValue) volumeValue.textContent = Math.round(volume * 100).toString();
     });
 
-    // Preset buttons
-    const presetBtns = document.querySelectorAll('.preset-btn') as NodeListOf<HTMLButtonElement>;
+    // Preset buttons - updated selector
+    const presetBtns = document.querySelectorAll('.preset-btn-compact') as NodeListOf<HTMLButtonElement>;
     presetBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const preset = btn.dataset.preset;
@@ -381,11 +374,9 @@ export class UI {
     // Update play button
     const playBtn = document.getElementById('playBtn') as HTMLButtonElement;
     if (playBtn) {
-      const iconSpan = playBtn.querySelector('span:first-child');
-      const textSpan = playBtn.querySelector('span:last-child');
-      if (iconSpan && textSpan) {
+      const iconSpan = playBtn.querySelector('span');
+      if (iconSpan) {
         iconSpan.textContent = state.isPlaying ? '⏸' : '▶';
-        textSpan.textContent = state.isPlaying ? 'Pause' : 'Play';
       }
     }
 
@@ -405,6 +396,7 @@ export class UI {
           // Update content with animation
           if (active && !wasActive) {
             // Step was just activated
+
             btn.innerHTML = '<div class="step-dot" aria-hidden="true"></div>';
           } else if (!active && wasActive) {
             // Step was just deactivated
