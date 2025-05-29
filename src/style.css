@@ -7,8 +7,8 @@
   }
   
   .grid-cols-17 {
-    grid-template-columns: 130px repeat(16, 44px);
-    gap: 8px;
+    grid-template-columns: 120px repeat(16, 44px);
+    gap: 2px;
   }
 }
 
@@ -640,7 +640,24 @@ input:focus-visible {
 /* Enhanced sound test button */
 .sound-test-btn {
   position: relative;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  flex-shrink: 0 !important;
+  overflow: hidden;
+  box-sizing: border-box !important;
+  font-size: 0 !important;
+  line-height: 1 !important;
 }
 
 .sound-test-btn::after {
@@ -746,8 +763,14 @@ kbd {
   }
   
   .sound-test-btn {
-    width: 1rem;
-    height: 1rem;
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    min-height: 16px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    border: none !important;
+    font-size: 0 !important;
   }
   
   h1 {

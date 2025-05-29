@@ -156,8 +156,8 @@ export class UI {
           <div class="glass-effect rounded-xl p-4 shadow-xl">
             <div class="grid grid-cols-1 gap-3">
               <!-- Step Numbers with Beat Markers -->
-              <div class="grid grid-cols-17 gap-2 mb-4">
-                <div style="width: 130px;"></div>
+              <div class="grid grid-cols-17 gap-1 mb-4">
+                <div style="width: 120px;"></div>
                 ${Array.from({ length: 16 }, (_, i) => `
                   <div class="text-center font-mono ${i % 4 === 0 ? 'text-white' : 'text-gray-400'} p-1 flex items-center justify-center" style="width: 44px;">
                     ${(i + 1).toString().padStart(2, '0')}
@@ -167,9 +167,9 @@ export class UI {
 
               <!-- Sound Tracks -->
               ${soundConfigs.map((config, trackIndex) => `
-                <div class="grid grid-cols-17 gap-2 group">
+                <div class="grid grid-cols-17 gap-1 group">
                   <!-- Track Label with Fixed Width for Full Names -->
-                  <div class="flex items-center gap-2 pl-2 pr-3" style="width: 130px;">
+                  <div class="flex items-center gap-2 pl-2 pr-3" style="width: 120px;">
                     <button class="sound-test-btn w-5 h-5 rounded-full ${config.color} hover:scale-110 transition-all duration-300 shadow-lg
                                  flex items-center justify-center group-hover:animate-pulse"
                             data-track="${trackIndex}">
@@ -195,7 +195,7 @@ export class UI {
             <div class="mt-6 mb-2">
               <div class="flex justify-center">
                 <div class="grid grid-cols-17 gap-1">
-                  <div style="width: 130px;"></div>
+                  <div style="width: 120px;"></div>
                   ${Array.from({ length: 16 }, (_, i) => `
                     <div class="step-indicator" id="step-indicator-${i}" style="width: 44px;">
                       <div class="w-full h-full ${(state.isPlaying && i === state.currentStep) 
