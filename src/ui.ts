@@ -82,70 +82,74 @@ export class UI {
     this.container.innerHTML = `
       <div class="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-2">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <!-- Compact Header + Controls Bar -->
-          <div class="glass-effect rounded-lg p-3 mb-3 shadow-xl">
-            <div class="flex flex-wrap items-center justify-between gap-4">
-              <!-- Left: Branding -->
-              <div class="flex items-center gap-3">
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  BeatGen
-                </h1>
-                <span class="text-gray-400 text-sm hidden sm:inline">Step Sequencer</span>
-              </div>
-
-              <!-- Center: Main Controls -->
-              <div class="flex items-center gap-6 flex-wrap">
-                <!-- Transport -->
-                <div class="flex items-center gap-2">
-                  <span class="text-xs text-gray-400 hidden sm:inline">PLAY</span>
-                  <button id="playBtn" class="btn-transport btn-play" title="Play/Pause (Space)">
-                    <span class="text-xl">${state.isPlaying ? '⏸' : '▶'}</span>
-                  </button>
-                </div>
-
-                <!-- BPM -->
-                <div class="flex items-center gap-2">
-                  <span class="text-xs text-gray-400 hidden sm:inline">BPM</span>
-                  <input type="range" id="bpmSlider" min="60" max="200" value="${state.bpm}" 
-                         class="control-slider bpm-slider w-20" title="Tempo: ${state.bpm} BPM">
-                  <span id="bpmValue" class="text-sm font-mono font-bold text-white min-w-[3ch]">
-                    ${state.bpm}
-                  </span>
-                </div>
-
-                <!-- Volume -->
-                <div class="flex items-center gap-2">
-                  <span class="text-xs text-gray-400 hidden sm:inline">VOL</span>
-                  <input type="range" id="volumeSlider" min="0" max="100" value="${Math.round(state.volume * 100)}" 
-                         class="control-slider volume-slider w-16" title="Master Volume: ${Math.round(state.volume * 100)}%">
-                  <span id="volumeValue" class="text-xs font-mono text-gray-300 min-w-[3ch]">
-                    ${Math.round(state.volume * 100)}%
+          <!-- Enhanced Header + Controls Bar -->
+          <div class="glass-effect rounded-xl p-4 mb-4 shadow-xl">
+            <div class="flex items-center justify-between gap-4">
+              
+              <!-- Left: Branding + Status -->
+              <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    BeatGen
+                  </h1>
+                  <span class="text-xs px-2 py-1 bg-gray-700/50 rounded-full text-gray-300 hidden sm:inline">
+                    Step Sequencer
                   </span>
                 </div>
               </div>
 
-              <!-- Right: Tools & Presets -->
-              <div class="flex items-center gap-3 flex-wrap">
-                <!-- Tools -->
-                <div class="flex items-center gap-1">
-                  <button id="clearBtn" class="btn-tool-compact btn-clear" title="Clear All">
-                    <span class="text-sm">🗑</span>
-                  </button>
-                  <button id="randomBtn" class="btn-tool-compact btn-random" title="Randomize">
-                    <span class="text-sm">🎲</span>
-                  </button>
+              <!-- Center: Primary Transport Control -->
+              <div class="flex items-center gap-6">
+                <button id="playBtn" class="btn-transport-primary" title="Play/Pause (Space)">
+                  <span class="text-2xl">${state.isPlaying ? '⏸️' : '▶️'}</span>
+                </button>
+              </div>
+
+              <!-- Right: Controls Panel -->
+              <div class="flex items-center gap-4">
+                
+                <!-- Settings Group -->
+                <div class="flex items-center gap-3 px-3 py-2 bg-gray-800/30 rounded-lg border border-gray-700/50">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-400 font-medium">BPM</span>
+                    <input type="range" id="bpmSlider" min="60" max="200" value="${state.bpm}" 
+                           class="control-slider-modern w-16" title="Tempo: ${state.bpm} BPM">
+                    <span id="bpmValue" class="text-sm font-mono text-white min-w-[3ch] font-bold">
+                      ${state.bpm}
+                    </span>
+                  </div>
+                  
+                  <div class="w-px h-6 bg-gray-600"></div>
+                  
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-400 font-medium">VOL</span>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="${Math.round(state.volume * 100)}" 
+                           class="control-slider-modern w-16" title="Master Volume: ${Math.round(state.volume * 100)}%">
+                    <span id="volumeValue" class="text-xs text-gray-300 min-w-[4ch] font-mono">
+                      ${Math.round(state.volume * 100)}%
+                    </span>
+                  </div>
                 </div>
 
-                <!-- Presets -->
+                <!-- Actions Group -->
                 <div class="flex items-center gap-1">
-                  <button class="preset-btn-compact" data-preset="basic" title="Load Basic Beat">
-                    <span class="text-purple-400 text-sm">♪</span>
+                  <button id="clearBtn" class="btn-action" title="Clear All Patterns">
+                    <span class="text-base">🗑️</span>
                   </button>
-                  <button class="preset-btn-compact" data-preset="funk" title="Load Funk Groove">
-                    <span class="text-blue-400 text-sm">♫</span>
+                  <button id="randomBtn" class="btn-action" title="Randomize Patterns">
+                    <span class="text-base">🎲</span>
                   </button>
-                  <button class="preset-btn-compact" data-preset="techno" title="Load Techno Pattern">
-                    <span class="text-pink-400 text-sm">★</span>
+                  
+                  <div class="w-px h-6 bg-gray-600 mx-2"></div>
+                  
+                  <button class="btn-preset" data-preset="basic" title="Load Basic Beat">
+                    <span class="text-purple-400 text-base">♪</span>
+                  </button>
+                  <button class="btn-preset" data-preset="funk" title="Load Funk Groove">
+                    <span class="text-blue-400 text-base">♫</span>
+                  </button>
+                  <button class="btn-preset" data-preset="techno" title="Load Techno Pattern">
+                    <span class="text-pink-400 text-base">★</span>
                   </button>
                 </div>
               </div>
@@ -255,7 +259,7 @@ export class UI {
     });
 
     // Preset buttons - updated selector
-    const presetBtns = document.querySelectorAll('.preset-btn-compact') as NodeListOf<HTMLButtonElement>;
+    const presetBtns = document.querySelectorAll('.btn-preset') as NodeListOf<HTMLButtonElement>;
     presetBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const preset = btn.dataset.preset;
