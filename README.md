@@ -131,30 +131,6 @@ The sequencer uses a 12×16 pattern matrix. To change the number of tracks or st
 
 The UI uses Tailwind CSS with custom glass-morphism effects. Modify `src/style.css` for global styles and the component templates in `src/ui.ts` for layout changes.
 
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Inspired by classic drum machines like the Roland TR-808 and TR-909
-- Built with modern web technologies for optimal performance
-- Community feedback and contributions
-
-## 🐛 Known Issues
-
-- Audio context may need user interaction to start on some browsers
-- Performance may vary on older devices
-- Safari requires additional user gesture for audio initialization
-
-## 📞 Support
-
-If you encounter any issues or have questions:
-
-1. Check the [Issues](https://github.com/appunni/beatgen/issues) page
-2. Create a new issue with detailed information
-3. Include browser version and any console errors
-
 ---
 
 **Made with ❤️ and lots of ☕ by [appunni](https://github.com/appunni)**
