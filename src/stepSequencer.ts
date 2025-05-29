@@ -7,6 +7,8 @@ export interface SequencerState {
   bpm: number;
   volume: number;
   pattern: boolean[][];
+  isRecording: boolean;
+  recordingDuration: number;
 }
 
 export class StepSequencer {
@@ -15,6 +17,12 @@ export class StepSequencer {
   private soundConfigs: SoundConfig[];
   private state: SequencerState;
   private intervalId: number | null = null;
+  private mediaRecorder: MediaRecorder | null = null;
+  private recordedChunks: Blob[] = [];
+  private recordingStartTime: number = 0;
+  private recordingStream: MediaStream | null = null;
+  private destinationNode: MediaStreamAudioDestinationNode | null = null;
+  private masterGainNode: GainNode | null = null;
   private callbacks: {
     onStepChange?: (step: number) => void;
     onStateChange?: (state: SequencerState) => void;
@@ -30,7 +38,9 @@ export class StepSequencer {
       currentStep: 0,
       bpm: 120,
       volume: 0.7,
-      pattern: Array(12).fill(null).map(() => Array(16).fill(false))
+      pattern: Array(12).fill(null).map(() => Array(16).fill(false)),
+      isRecording: false,
+      recordingDuration: 0
     };
 
     // Don't initialize sounds here - wait for async initialization
@@ -42,11 +52,28 @@ export class StepSequencer {
       await this.soundGenerator.initializeAudio();
       console.log('Audio context initialized');
       this.initializeSounds();
-      console.log('Sounds generated successfully');
+      this.setupAudioNodes();
+      console.log('Audio nodes and sounds initialized successfully');
     } catch (error) {
       console.error('Error initializing step sequencer:', error);
       throw error;
     }
+  }
+
+  private setupAudioNodes(): void {
+    const audioContext = this.soundGenerator.context;
+    
+    // Create master gain node for volume control
+    this.masterGainNode = audioContext.createGain();
+    this.masterGainNode.gain.value = this.state.volume;
+    
+    // Create destination node for recording
+    this.destinationNode = audioContext.createMediaStreamDestination();
+    this.recordingStream = this.destinationNode.stream;
+    
+    // Connect master gain to both the main output and recording destination
+    this.masterGainNode.connect(audioContext.destination);
+    this.masterGainNode.connect(this.destinationNode);
   }
 
   private initializeSounds(): void {
@@ -106,10 +133,28 @@ export class StepSequencer {
       if (track[this.state.currentStep]) {
         const buffer = this.sounds[trackIndex];
         if (buffer) {
-          this.soundGenerator.playSound(buffer, this.state.volume);
+          this.playSoundThroughMaster(buffer);
         }
       }
     });
+  }
+
+  private playSoundThroughMaster(buffer: AudioBuffer): void {
+    const audioContext = this.soundGenerator.context;
+    const source = audioContext.createBufferSource();
+    
+    source.buffer = buffer;
+    if (this.masterGainNode) {
+      source.connect(this.masterGainNode);
+    } else {
+      // Fallback to direct connection if master gain not set up
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = this.state.volume;
+      source.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+    }
+    
+    source.start();
   }
 
   setBPM(bpm: number): void {
@@ -123,7 +168,115 @@ export class StepSequencer {
 
   setVolume(volume: number): void {
     this.state.volume = Math.max(0, Math.min(1, volume));
+    if (this.masterGainNode) {
+      this.masterGainNode.gain.value = this.state.volume;
+    }
     this.notifyStateChange();
+  }
+
+  // Recording functionality
+  startRecording(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (this.state.isRecording || !this.recordingStream) {
+        reject(new Error('Already recording or recording not available'));
+        return;
+      }
+
+      try {
+        // Check if MediaRecorder is supported
+        if (!window.MediaRecorder) {
+          reject(new Error('MediaRecorder not supported in this browser'));
+          return;
+        }
+
+        this.recordedChunks = [];
+        this.mediaRecorder = new MediaRecorder(this.recordingStream, {
+          mimeType: this.getSupportedMimeType()
+        });
+
+        this.mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            this.recordedChunks.push(event.data);
+          }
+        };
+
+        this.mediaRecorder.onstop = () => {
+          console.log('Recording stopped, chunks:', this.recordedChunks.length);
+        };
+
+        this.mediaRecorder.onerror = (event) => {
+          console.error('MediaRecorder error:', event);
+          this.stopRecording();
+        };
+
+        this.mediaRecorder.start(100); // Collect data every 100ms
+        this.state.isRecording = true;
+        this.recordingStartTime = Date.now();
+        this.state.recordingDuration = 0;
+        
+        // Start duration timer
+        this.startRecordingTimer();
+        
+        this.notifyStateChange();
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  stopRecording(): Promise<Blob | null> {
+    return new Promise((resolve) => {
+      if (!this.state.isRecording || !this.mediaRecorder) {
+        resolve(null);
+        return;
+      }
+
+      this.state.isRecording = false;
+      this.state.recordingDuration = 0;
+      
+      this.mediaRecorder.onstop = () => {
+        if (this.recordedChunks.length > 0) {
+          const blob = new Blob(this.recordedChunks, {
+            type: this.getSupportedMimeType()
+          });
+          resolve(blob);
+        } else {
+          resolve(null);
+        }
+      };
+
+      this.mediaRecorder.stop();
+      this.notifyStateChange();
+    });
+  }
+
+  private getSupportedMimeType(): string {
+    const types = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/mp4',
+      'audio/mpeg'
+    ];
+    
+    for (const type of types) {
+      if (MediaRecorder.isTypeSupported(type)) {
+        return type;
+      }
+    }
+    
+    return 'audio/webm'; // fallback
+  }
+
+  private startRecordingTimer(): void {
+    const updateTimer = () => {
+      if (this.state.isRecording) {
+        this.state.recordingDuration = Math.floor((Date.now() - this.recordingStartTime) / 1000);
+        this.notifyStateChange();
+        setTimeout(updateTimer, 1000);
+      }
+    };
+    updateTimer();
   }
 
   clearPattern(): void {
@@ -206,7 +359,7 @@ export class StepSequencer {
   playSound(trackIndex: number): void {
     const buffer = this.sounds[trackIndex];
     if (buffer) {
-      this.soundGenerator.playSound(buffer, this.state.volume);
+      this.playSoundThroughMaster(buffer);
     }
   }
 }

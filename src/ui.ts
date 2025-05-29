@@ -134,6 +134,26 @@ export class UI {
 
                 <!-- Actions Group -->
                 <div class="flex items-center gap-1">
+                  <!-- Recording Controls -->
+                  <button id="recordBtn" class="btn-record ${state.isRecording ? 'recording' : ''}" 
+                          title="${state.isRecording ? 'Stop Recording' : 'Start Recording'}">
+                    <span class="text-base">${state.isRecording ? '⏹️' : '🔴'}</span>
+                  </button>
+                  
+                  ${state.isRecording ? `
+                    <span id="recordingTimer" class="text-xs text-red-400 font-mono min-w-[3ch]">
+                      ${Math.floor(state.recordingDuration / 60)}:${(state.recordingDuration % 60).toString().padStart(2, '0')}
+                    </span>
+                  ` : ''}
+                  
+                  <div id="downloadSection" class="flex items-center gap-1" style="display: none;">
+                    <button id="downloadBtn" class="btn-download" title="Download Recording">
+                      <span class="text-base">⬇️</span>
+                    </button>
+                  </div>
+                  
+                  <div class="w-px h-6 bg-gray-600 mx-2"></div>
+                  
                   <button id="clearBtn" class="btn-action" title="Clear All Patterns">
                     <span class="text-base">🗑️</span>
                   </button>
@@ -221,10 +241,16 @@ export class UI {
     const playBtn = document.getElementById('playBtn') as HTMLButtonElement;
     const clearBtn = document.getElementById('clearBtn') as HTMLButtonElement;
     const randomBtn = document.getElementById('randomBtn') as HTMLButtonElement;
+    const recordBtn = document.getElementById('recordBtn') as HTMLButtonElement;
+    const downloadBtn = document.getElementById('downloadBtn') as HTMLButtonElement;
 
     playBtn?.addEventListener('click', () => this.sequencer.togglePlayback());
     clearBtn?.addEventListener('click', () => this.sequencer.clearPattern());
     randomBtn?.addEventListener('click', () => this.sequencer.randomizePattern());
+    
+    // Recording controls
+    recordBtn?.addEventListener('click', () => this.toggleRecording());
+    downloadBtn?.addEventListener('click', () => this.downloadRecording());
 
     // BPM control
     const bpmSlider = document.getElementById('bpmSlider') as HTMLInputElement;
@@ -332,6 +358,68 @@ export class UI {
     });
   }
 
+  // Recording functionality
+  private lastRecordedBlob: Blob | null = null;
+
+  private async toggleRecording(): Promise<void> {
+    const state = this.sequencer.getState();
+    
+    try {
+      if (state.isRecording) {
+        console.log('Stopping recording...');
+        const blob = await this.sequencer.stopRecording();
+        if (blob) {
+          this.lastRecordedBlob = blob;
+          console.log('Recording stopped, blob size:', blob.size);
+          // Show download button
+          const downloadSection = document.getElementById('downloadSection');
+          if (downloadSection) {
+            downloadSection.style.display = 'flex';
+          }
+        }
+      } else {
+        console.log('Starting recording...');
+        await this.sequencer.startRecording();
+        console.log('Recording started');
+        // Hide download button when starting new recording
+        const downloadSection = document.getElementById('downloadSection');
+        if (downloadSection) {
+          downloadSection.style.display = 'none';
+        }
+        this.lastRecordedBlob = null;
+      }
+    } catch (error) {
+      console.error('Recording error:', error);
+      alert(`Recording failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  private downloadRecording(): void {
+    if (!this.lastRecordedBlob) {
+      alert('No recording available to download');
+      return;
+    }
+
+    try {
+      const url = URL.createObjectURL(this.lastRecordedBlob);
+      const a = document.createElement('a');
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
+      const state = this.sequencer.getState();
+      
+      a.href = url;
+      a.download = `beatgen-${state.bpm}bpm-${timestamp}.webm`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      console.log('Download initiated');
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('Failed to download recording');
+    }
+  }
+
   private updateStepIndicators(currentStep: number): void {
     const state = this.sequencer.getState();
     
@@ -359,7 +447,7 @@ export class UI {
   }
 
   private updateUI(state: SequencerState): void {
-    console.log('updateUI called - updating step buttons');
+    console.log('updateUI called - updating step buttons and recording status');
     
     // Update play button
     const playBtn = document.getElementById('playBtn') as HTMLButtonElement;
@@ -368,6 +456,38 @@ export class UI {
       if (iconSpan) {
         iconSpan.textContent = state.isPlaying ? '⏸' : '▶';
       }
+    }
+
+    // Update recording button and status
+    const recordBtn = document.getElementById('recordBtn') as HTMLButtonElement;
+    if (recordBtn) {
+      const iconSpan = recordBtn.querySelector('span');
+      if (iconSpan) {
+        iconSpan.textContent = state.isRecording ? '⏹️' : '🔴';
+      }
+      recordBtn.className = `btn-record ${state.isRecording ? 'recording' : ''}`;
+      recordBtn.title = state.isRecording ? 'Stop Recording' : 'Start Recording';
+    }
+
+    // Update recording timer
+    const existingTimer = document.getElementById('recordingTimer');
+    if (state.isRecording) {
+      if (!existingTimer) {
+        // Create timer element if it doesn't exist
+        const timer = document.createElement('span');
+        timer.id = 'recordingTimer';
+        timer.className = 'text-xs text-red-400 font-mono min-w-[3ch]';
+        recordBtn?.parentNode?.insertBefore(timer, recordBtn.nextSibling);
+      }
+      const timer = document.getElementById('recordingTimer');
+      if (timer) {
+        const minutes = Math.floor(state.recordingDuration / 60);
+        const seconds = state.recordingDuration % 60;
+        timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      }
+    } else if (existingTimer) {
+      // Remove timer when not recording
+      existingTimer.remove();
     }
 
     // Update step buttons with enhanced feedback
