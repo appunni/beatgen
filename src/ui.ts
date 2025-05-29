@@ -164,8 +164,10 @@ export class UI {
               <div class="grid grid-cols-17 gap-1 mb-4">
                 <div style="width: 120px;"></div>
                 ${Array.from({ length: 16 }, (_, i) => `
-                  <div class="text-center font-mono ${i % 4 === 0 ? 'text-white' : 'text-gray-400'} p-1 flex items-center justify-center" style="width: 44px;">
-                    ${(i + 1).toString().padStart(2, '0')}
+                  <div class="step-number-top" id="step-number-${i}" style="width: 44px;">
+                    <span class="step-number-label text-center font-mono ${i % 4 === 0 ? 'text-white' : 'text-gray-400'} p-1 flex items-center justify-center">
+                      ${(i + 1).toString().padStart(2, '0')}
+                    </span>
                   </div>
                 `).join('')}
               </div>
@@ -194,23 +196,6 @@ export class UI {
                   `).join('')}
                 </div>
               `).join('')}
-            </div>
-
-            <!-- Step Position Indicator -->
-            <div class="mt-6 mb-2">
-              <div class="flex justify-center">
-                <div class="grid grid-cols-17 gap-1">
-                  <div style="width: 120px;"></div>
-                  ${Array.from({ length: 16 }, (_, i) => `
-                    <div class="step-indicator" id="step-indicator-${i}" style="width: 44px;">
-                      <div class="w-full h-full ${(state.isPlaying && i === state.currentStep) 
-                        ? 'bg-gradient-to-r from-purple-500 to-pink-500' 
-                        : 'bg-transparent'} transition-all duration-150 rounded">
-                      </div>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
             </div>
           </div>
 
@@ -358,15 +343,15 @@ export class UI {
     }
     
     for (let i = 0; i < 16; i++) {
-      const indicator = document.getElementById(`step-indicator-${i}`);
-      if (indicator) {
-        const innerDiv = indicator.querySelector('div');
-        if (innerDiv) {
+      const stepNumber = document.getElementById(`step-number-${i}`);
+      if (stepNumber) {
+        const label = stepNumber.querySelector('.step-number-label');
+        if (label) {
           // Only highlight if playing and this is the current step
           if (state.isPlaying && i === currentStep) {
-            innerDiv.className = 'w-full h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded';
+            label.classList.add('active');
           } else {
-            innerDiv.className = 'w-full h-full bg-transparent rounded';
+            label.classList.remove('active');
           }
         }
       }
