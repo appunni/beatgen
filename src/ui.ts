@@ -98,15 +98,16 @@ export class UI {
                 </div>
               </div>
 
-              <!-- Center: Primary Transport Control -->
-              <div class="flex items-center gap-6">
-                <button id="playBtn" class="btn-transport-primary" title="Play/Pause (Space)">
-                  <span class="text-2xl">${state.isPlaying ? '⏸️' : '▶️'}</span>
-                </button>
-              </div>
+              <!-- Center: Empty space for better balance -->
+              <div class="flex-1"></div>
 
-              <!-- Right: Controls Panel -->
+              <!-- Right: Transport + Controls Panel -->
               <div class="flex items-center gap-4">
+                
+                <!-- Primary Transport Control -->
+                <button id="playBtn" class="btn-transport-primary" title="Play/Pause (Space)">
+                  <span class="text-2xl">${state.isPlaying ? '⏸' : '▶'}</span>
+                </button>
                 
                 <!-- Settings Group -->
                 <div class="flex items-center gap-3 px-3 py-2 bg-gray-800/30 rounded-lg border border-gray-700/50">
