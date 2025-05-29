@@ -6,6 +6,11 @@ A modern, web-based step sequencer built with TypeScript and the Web Audio API. 
 
 **[Try BeatGen →](https://appunni.github.io/beatgen/)**
 
+## 📸 Screenshot
+
+![BeatGen Step Sequencer Interface](./assets/beatgen-screenshot.png)
+*Modern step sequencer with 12 drum tracks, 16-step patterns, and real-time visual feedback*
+
 ## ✨ Features
 
 - **12 Unique Drum Sounds**: All generated programmatically using Web Audio API
