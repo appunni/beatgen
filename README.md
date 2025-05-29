@@ -2,8 +2,6 @@
 
 A modern, web-based step sequencer built with TypeScript and the Web Audio API. Create beats using 12 programmatically generated drum sounds with an intuitive 16-step pattern interface.
 
-![BeatGen Screenshot](https://github.com/appunni/beatgen/raw/main/screenshot.png)
-
 ## ✨ Features
 
 - **12 Unique Drum Sounds**: All generated programmatically using Web Audio API
@@ -130,9 +128,3 @@ The sequencer uses a 12×16 pattern matrix. To change the number of tracks or st
 ### Styling
 
 The UI uses Tailwind CSS with custom glass-morphism effects. Modify `src/style.css` for global styles and the component templates in `src/ui.ts` for layout changes.
-
----
-
-**Made with ❤️ and lots of ☕ by [appunni](https://github.com/appunni)**
-
-Enjoy making beats! 🎵
