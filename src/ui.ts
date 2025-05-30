@@ -104,10 +104,23 @@ export class UI {
               <!-- Right: Transport + Controls Panel -->
               <div class="flex items-center gap-4">
                 
-                <!-- Primary Transport Control -->
-                <button id="playBtn" class="btn-transport-primary" title="Play/Pause (Space)">
-                  <span class="text-2xl">${state.isPlaying ? '⏸' : '▶'}</span>
-                </button>
+                <!-- Primary Transport Controls -->
+                <div class="flex items-center gap-2">
+                  <button id="playBtn" class="btn-transport-primary" title="Play/Pause (Space)">
+                    <span class="text-2xl">${state.isPlaying ? '⏸' : '▶'}</span>
+                  </button>
+                  
+                  <button id="recordBtn" class="btn-transport-record ${state.isRecording ? 'recording' : ''}" 
+                          title="${state.isRecording ? 'Stop Recording' : 'Start Recording'}">
+                    <span class="text-xl">${state.isRecording ? '⏹️' : '🔴'}</span>
+                  </button>
+                </div>
+                
+                ${state.isRecording ? `
+                  <span id="recordingTimer" class="recording-timer">
+                    🔴 ${Math.floor(state.recordingDuration / 60)}:${(state.recordingDuration % 60).toString().padStart(2, '0')}
+                  </span>
+                ` : ''}
                 
                 <!-- Settings Group -->
                 <div class="flex items-center gap-3 px-3 py-2 bg-gray-800/30 rounded-lg border border-gray-700/50">
@@ -133,44 +146,24 @@ export class UI {
                 </div>
 
                 <!-- Actions Group -->
-                <div class="flex items-center gap-1">
-                  <!-- Recording Controls -->
-                  <button id="recordBtn" class="btn-record ${state.isRecording ? 'recording' : ''}" 
-                          title="${state.isRecording ? 'Stop Recording' : 'Start Recording'}">
-                    <span class="text-base">${state.isRecording ? '⏹️' : '🔴'}</span>
+                <div class="flex items-center gap-2">
+                  <button id="clearBtn" class="preset-btn" title="Clear All Patterns">
+                    🗑️
                   </button>
-                  
-                  ${state.isRecording ? `
-                    <span id="recordingTimer" class="text-xs text-red-400 font-mono min-w-[3ch]">
-                      ${Math.floor(state.recordingDuration / 60)}:${(state.recordingDuration % 60).toString().padStart(2, '0')}
-                    </span>
-                  ` : ''}
-                  
-                  <div id="downloadSection" class="flex items-center gap-1" style="display: none;">
-                    <button id="downloadBtn" class="btn-download" title="Download Recording">
-                      <span class="text-base">⬇️</span>
-                    </button>
-                  </div>
-                  
-                  <div class="w-px h-6 bg-gray-600 mx-2"></div>
-                  
-                  <button id="clearBtn" class="btn-action" title="Clear All Patterns">
-                    <span class="text-base">🗑️</span>
-                  </button>
-                  <button id="randomBtn" class="btn-action" title="Randomize Patterns">
-                    <span class="text-base">🎲</span>
+                  <button id="randomBtn" class="preset-btn" title="Randomize Patterns">
+                    🎲
                   </button>
                   
                   <div class="w-px h-6 bg-gray-600 mx-2"></div>
                   
-                  <button class="btn-preset" data-preset="basic" title="Load Basic Beat">
-                    <span class="text-purple-400 text-base">♪</span>
+                  <button class="preset-btn" data-preset="basic" title="Load Basic Beat">
+                    <span class="text-purple-400">♪</span>
                   </button>
-                  <button class="btn-preset" data-preset="funk" title="Load Funk Groove">
-                    <span class="text-blue-400 text-base">♫</span>
+                  <button class="preset-btn" data-preset="funk" title="Load Funk Groove">
+                    <span class="text-blue-400">♫</span>
                   </button>
-                  <button class="btn-preset" data-preset="techno" title="Load Techno Pattern">
-                    <span class="text-pink-400 text-base">★</span>
+                  <button class="preset-btn" data-preset="techno" title="Load Techno Pattern">
+                    <span class="text-pink-400">★</span>
                   </button>
                 </div>
               </div>
@@ -242,7 +235,6 @@ export class UI {
     const clearBtn = document.getElementById('clearBtn') as HTMLButtonElement;
     const randomBtn = document.getElementById('randomBtn') as HTMLButtonElement;
     const recordBtn = document.getElementById('recordBtn') as HTMLButtonElement;
-    const downloadBtn = document.getElementById('downloadBtn') as HTMLButtonElement;
 
     playBtn?.addEventListener('click', () => this.sequencer.togglePlayback());
     clearBtn?.addEventListener('click', () => this.sequencer.clearPattern());
@@ -250,7 +242,6 @@ export class UI {
     
     // Recording controls
     recordBtn?.addEventListener('click', () => this.toggleRecording());
-    downloadBtn?.addEventListener('click', () => this.downloadRecording());
 
     // BPM control
     const bpmSlider = document.getElementById('bpmSlider') as HTMLInputElement;
@@ -371,21 +362,16 @@ export class UI {
         if (blob) {
           this.lastRecordedBlob = blob;
           console.log('Recording stopped, blob size:', blob.size);
-          // Show download button
-          const downloadSection = document.getElementById('downloadSection');
-          if (downloadSection) {
-            downloadSection.style.display = 'flex';
-          }
+          
+          // Automatically download the recording
+          setTimeout(() => {
+            this.downloadRecording();
+          }, 100); // Small delay to ensure UI has updated
         }
       } else {
         console.log('Starting recording...');
         await this.sequencer.startRecording();
         console.log('Recording started');
-        // Hide download button when starting new recording
-        const downloadSection = document.getElementById('downloadSection');
-        if (downloadSection) {
-          downloadSection.style.display = 'none';
-        }
         this.lastRecordedBlob = null;
       }
     } catch (error) {
@@ -465,29 +451,31 @@ export class UI {
       if (iconSpan) {
         iconSpan.textContent = state.isRecording ? '⏹️' : '🔴';
       }
-      recordBtn.className = `btn-record ${state.isRecording ? 'recording' : ''}`;
+      recordBtn.className = `btn-transport-record ${state.isRecording ? 'recording' : ''}`;
       recordBtn.title = state.isRecording ? 'Stop Recording' : 'Start Recording';
     }
 
     // Update recording timer
-    const existingTimer = document.getElementById('recordingTimer');
+    const recordingTimer = document.getElementById('recordingTimer') as HTMLSpanElement;
     if (state.isRecording) {
-      if (!existingTimer) {
-        // Create timer element if it doesn't exist
-        const timer = document.createElement('span');
-        timer.id = 'recordingTimer';
-        timer.className = 'text-xs text-red-400 font-mono min-w-[3ch]';
-        recordBtn?.parentNode?.insertBefore(timer, recordBtn.nextSibling);
+      if (recordingTimer) {
+        recordingTimer.textContent = `🔴 ${Math.floor(state.recordingDuration / 60)}:${(state.recordingDuration % 60).toString().padStart(2, '0')}`;
+      } else {
+        // If timer doesn't exist but should, create it dynamically
+        const timerSpan = document.createElement('span');
+        timerSpan.id = 'recordingTimer';
+        timerSpan.className = 'recording-timer';
+        timerSpan.textContent = `🔴 ${Math.floor(state.recordingDuration / 60)}:${(state.recordingDuration % 60).toString().padStart(2, '0')}`;
+        
+        // Insert after the record button
+        const recordBtn = document.getElementById('recordBtn');
+        if (recordBtn && recordBtn.parentNode) {
+          recordBtn.parentNode.insertBefore(timerSpan, recordBtn.nextSibling);
+        }
       }
-      const timer = document.getElementById('recordingTimer');
-      if (timer) {
-        const minutes = Math.floor(state.recordingDuration / 60);
-        const seconds = state.recordingDuration % 60;
-        timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-      }
-    } else if (existingTimer) {
-      // Remove timer when not recording
-      existingTimer.remove();
+    } else if (recordingTimer) {
+      // Remove timer if recording stopped
+      recordingTimer.remove();
     }
 
     // Update step buttons with enhanced feedback
