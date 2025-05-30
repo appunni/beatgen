@@ -132,9 +132,58 @@ export class StepSequencer {
   }
 
   randomizePattern(): void {
-    this.state.pattern = this.state.pattern.map(track => 
-      track.map(() => Math.random() < 0.2) // 20% chance for each step
+    // Define probability weights for each sound type
+    // Higher values = more likely to appear
+    const soundWeights = [
+      0.35, // Kick - high probability, backbone of most patterns
+      0.25, // Snare - high probability, essential rhythm element
+      0.40, // Hi-Hat - highest probability, provides consistent rhythm
+      0.15, // Open HH - moderate probability, used for accents
+      0.08, // Crash - low probability, used sparingly for emphasis
+      0.20, // Bass - moderate probability, adds low-end variety
+      0.12, // Clap - low-moderate probability, rhythmic accent
+      0.10, // Tom - low probability, fills and accents
+      0.08, // Shaker - low probability, rhythmic texture element
+      0.06, // Cowbell - very low probability, special accent
+      0.10, // V-Bass - low probability, creative element
+      0.07, // V-Perc - very low probability, creative element
+    ];
+
+    // Enhanced pattern generation with musical logic
+    this.state.pattern = this.state.pattern.map((track, trackIndex) => 
+      track.map((_, stepIndex) => {
+        const baseWeight = soundWeights[trackIndex];
+        let adjustedWeight = baseWeight;
+
+        // Boost probability for strong beats (1, 5, 9, 13) for kick and snare
+        if ((trackIndex === 0 || trackIndex === 1) && stepIndex % 4 === 0) {
+          adjustedWeight *= 2.0; // Double chance on strong beats
+        }
+        
+        // Boost hi-hat probability on off-beats for better groove
+        if (trackIndex === 2 && stepIndex % 2 === 1) {
+          adjustedWeight *= 1.5; // 50% boost on off-beats
+        }
+        
+        // Boost shaker probability on 16th note subdivisions for rhythmic texture
+        if (trackIndex === 8 && stepIndex % 2 === 1) {
+          adjustedWeight *= 1.8; // Shaker works well on off-beats
+        }
+        
+        // Reduce probability for accents (crash, cowbell) on weak beats
+        if ((trackIndex === 4 || trackIndex === 9) && stepIndex % 4 !== 0) {
+          adjustedWeight *= 0.3; // Reduce to 30% on weak beats
+        }
+        
+        // Prevent too many simultaneous low-frequency sounds (kick + bass)
+        if (trackIndex === 5 && stepIndex % 4 === 0) {
+          adjustedWeight *= 0.4; // Reduce bass on strong beats where kick is likely
+        }
+        
+        return Math.random() < adjustedWeight;
+      })
     );
+    
     this.notifyStateChange();
   }
 

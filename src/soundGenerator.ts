@@ -372,10 +372,10 @@ export class SoundGenerator {
     return buffer;
   }
 
-  // Ride cymbal - improved metallic ping with sustain
-  generateRide(): AudioBuffer {
+  // Shaker - realistic rhythmic percussion
+  generateShaker(): AudioBuffer {
     const sampleRate = this.audioContext.sampleRate;
-    const duration = 0.4;
+    const duration = 0.1;
     const buffer = this.audioContext.createBuffer(2, sampleRate * duration, sampleRate);
     const leftData = buffer.getChannelData(0);
     const rightData = buffer.getChannelData(1);
@@ -383,29 +383,28 @@ export class SoundGenerator {
     for (let i = 0; i < leftData.length; i++) {
       const t = i / sampleRate;
       
-      // Bell-like fundamental with harmonic
-      const fundamental = Math.sin(2 * Math.PI * 2000 * t);
-      const harmonic = Math.sin(2 * Math.PI * 3200 * t) * 0.6;
+      // Multiple layers of high-frequency noise for realistic shaker texture
+      const highFreqNoise = (Math.random() * 2 - 1) * 0.6;
+      const mediumFreqNoise = (Math.random() * 2 - 1) * 0.4;
       
-      // Minimal noise for texture
-      const noise = (Math.random() * 2 - 1) * 0.05;
+      // Granular texture simulation - multiple small attacks
+      const granular = Math.sin(2 * Math.PI * 150 * t) * (Math.random() * 2 - 1) * 0.3;
       
-      // Attack with sustained decay
-      const attack = Math.exp(-t * 20); // Sharp initial attack
-      const sustain = Math.exp(-t * 3); // Longer sustain
-      const envelope = attack * 0.3 + sustain;
+      // Sharp envelope with quick decay
+      const envelope = Math.exp(-t * 35);
       
-      const rideSound = (fundamental + harmonic + noise) * envelope;
+      // Combine noise layers
+      const shakerSound = (highFreqNoise + mediumFreqNoise * 0.7 + granular) * envelope;
       
-      leftData[i] = rideSound * 0.15;
-      rightData[i] = rideSound * 0.15;
+      leftData[i] = shakerSound * 0.25;
+      rightData[i] = shakerSound * 0.23; // Slight stereo difference
     }
     
-    // Band-pass for ride character
-    this.highPassFilter(leftData, 1800);
-    this.highPassFilter(rightData, 1800);
-    this.lowPassFilter(leftData, 10000);
-    this.lowPassFilter(rightData, 10000);
+    // Band-pass filtering for shaker character
+    this.highPassFilter(leftData, 3000);
+    this.highPassFilter(rightData, 3000);
+    this.lowPassFilter(leftData, 15000);
+    this.lowPassFilter(rightData, 15000);
     
     return buffer;
   }
@@ -530,7 +529,7 @@ export class SoundGenerator {
       { name: 'Bass', color: 'sound-purple', generate: () => this.generateBassDrum() },
       { name: 'Clap', color: 'sound-pink', generate: () => this.generateClap() },
       { name: 'Tom', color: 'sound-indigo', generate: () => this.generateTom() },
-      { name: 'Ride', color: 'sound-cyan', generate: () => this.generateRide() },
+      { name: 'Shaker', color: 'sound-cyan', generate: () => this.generateShaker() },
       { name: 'Cowbell', color: 'sound-teal', generate: () => this.generateCowbell() },
       { name: 'V-Bass', color: 'sound-lime', generate: () => this.generateVocalBass() },
       { name: 'V-Perc', color: 'sound-amber', generate: () => this.generateVocalPerc() },
