@@ -15,8 +15,8 @@ A modern, web-based step sequencer built with TypeScript and the Web Audio API. 
 
 - **12 Unique Drum Sounds**: All generated programmatically using Web Audio API
   - Kick, Snare, Hi-Hat (Open & Closed)
-  - Crash, Ride, Tom (High, Mid, Low)
-  - Clap, Shaker, Rim Shot
+  - Crash, Shaker, Tom (High, Mid, Low)
+  - Clap, Vocal Bass, Vocal Perc
 - **16-Step Pattern Sequencer**: Classic drum machine layout
 - **Real-time Controls**: 
   - Play/Pause functionality
